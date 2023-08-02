@@ -1,0 +1,159 @@
+for i in "abcdefghijklmnopqrstuvwxyz":
+	exec(f"{i} = 0")
+
+def truerun(code):
+	cl = list(code)
+	cl.append(" ")
+	cl.append("EOF")
+
+	Vstr = ""
+	Vnum = ""
+	Lfunc = ""
+	Cond = []
+	Condnum = ""
+	Condcom = ""
+	CondElse = ""
+
+	Stack = []
+	p = 0
+	
+	while cl[p] != "EOF":
+		if cl[p] in "0123456789":
+			while cl[p] in "0123456789":
+				Vnum += cl[p]
+				p += 1
+			p -= 1
+			Stack.append(int(Vnum))
+			Vnum = ""
+		elif cl[p] == "'":
+			p += 1
+			Stack.append(ord(cl[p]))
+		elif cl[p] == "$":
+			Stack.append(Stack[-1])
+		elif cl[p] == "%":
+			Stack.pop()
+		elif cl[p] == "\\":
+			Stack.append(Stack[-1])
+			Stack.append(Stack[-3])
+			Stack.pop(-3)
+			Stack.pop(-3)
+		elif cl[p] == "@":
+			Stack.reverse()
+		elif cl[p] == "ø":
+			Stack.append(Stack[Stack[-1]])
+		elif cl[p] in "+-*/":
+			exec(f"Stack.append(Stack[-2] {cl[p]} Stack[-1])")
+			Stack.pop(-2)
+			Stack.pop(-2)
+		elif cl[p] == "_":
+			Stack[-1] = -Stack[-1]
+		elif cl[p] in "abcdefghijklmnopqrstuvwxyz":
+			exec(f"Stack.append('{cl[p]}')")
+		elif cl[p] == ":":
+			if len(Stack[-1]) == 1:
+				exec(f"{Stack[-1]} = {Stack[-2]}")
+				Stack.pop()
+				Stack.pop()
+		elif cl[p] == ";" and cl[p + 1] in "abcdefghijklmnopqrstuvwxyz":
+			p += 1
+			exec(f"Stack.append({cl[p]})")
+		elif cl[p] == "&":
+			if Stack[-1] == 1 and Stack[-2] == 1:
+				Stack.append(1)
+			else:
+				Stack.append(0)
+		elif cl[p] == "|":
+			if Stack[-1] == 1 or Stack[-2] == 1:
+				Stack.append(1)
+			else:
+				Stack.append(0)
+		elif cl[p] == ".":
+			print(Stack[-1], end = "")
+			Stack.pop()
+		elif cl[p] == "~":
+			if Stack[-1] == 0:
+				Stack.pop()
+				Stack.append(1)
+			else:
+				Stack.pop()
+				Stack.append(0)
+		elif cl[p] == "?" and cl[p + 1] == "[":
+			p += 2
+			if cl[p] in "abcdefghijklmnopqrstuvwxyz":
+				Cond.append(cl[p])
+				p += 1
+				if cl[p] in "=<>n":
+					Cond.append(cl[p])
+					p += 1
+					if cl[p] in "0123456789":
+						while cl[p] in "0123456789":
+							
+							Condnum += cl[p]
+							p += 1
+						Cond.append(int(Condnum))
+						if cl[p] == "]" and cl[p + 1] == "(":
+							p += 2
+							while cl[p] != ")":
+								Condcom += cl[p]
+								p += 1
+							Cond.append(Condcom)
+							p += 1
+							if cl[p] == "!" and cl[p + 1] == "(":
+								p += 2
+								while cl[p] != ")":
+									CondElse += cl[p]
+									p += 1
+								Cond.append(CondElse)
+							Condition = f"if {Cond[0]} "
+							if Cond[1] in "<>":
+								Condition += Cond[1]
+							elif Cond[1] == "n":
+								Condition += "!="
+							elif Cond[1] == "=":
+								Condition += "=="
+							if len(Cond) == 4:
+								Condition += f" {Cond[2]}:\n\ttruerun('{Cond[3]}')"
+							elif len(Cond) == 5:
+								Condition += f" {Cond[2]}:\n\ttruerun('{Cond[3]}')\nelse:\n\ttruerun('{Cond[4]}')"
+							exec(Condition)
+							Cond = []
+							Condition = ""
+							Condnum = ""
+							Condcom = ""
+							Cstr = ""
+							CondElse = ""
+								
+		elif cl[p] == "`":
+			print(Stack)
+		elif cl[p] == "=":
+			if Stack[-1] != 0:
+				truerun(Stack[-2])
+		elif cl[p] == "æ":
+			if Stack[-1] == 0:
+				truerun(Stack[-2])
+		elif cl[p] == '"':
+			p += 1
+			while cl[p] != '"':
+				Vstr += cl[p]
+				p += 1
+			Stack.append(Vstr)
+			Vstr = ""
+		elif cl[p] == ",":
+			Stack.append(input())
+		elif cl[p] == "^":
+			Stack.append(int(input()))
+		elif cl[p] == "{":
+			p += 1
+			while cl[p] != "}":
+				Lfunc += cl[p]
+				p += 1
+			Stack.append(Lfunc)
+			Lfunc = ""
+		elif cl[p] == "ß":
+			truerun(Stack[-1])
+		elif cl[p] == "<":
+			p = Stack[-1]
+			Stack.pop()
+		p += 1
+
+truerun("""{ 1.0<} ^=0. Truth machine Program""")
