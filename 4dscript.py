@@ -2,9 +2,9 @@ from pprint import pprint as log
 
 grid = [
 [
-	[	[" ", " ", " ", " ", " "],
-		[" ", " ", " ", " ", " "],
-		[" ", " ", " ", " ", " "],
+	[	[">", "δ", "@", "v", " "],
+		[" ", " ", ".", "6", " "],
+		[" ", " ", "^", "<", " "],
 		[" ", " ", " ", " ", " "],
 		[" ", " ", " ", " ", " "]],
 
@@ -291,6 +291,25 @@ while grid[w][z][y][x] != "@":
 		else:
 			ptr = "k"
 		Stacks[-1].pop()
+	elif grid[w][z][y][x] == "δ":
+		if ptr == "l":
+			x -= 1
+		if ptr == "r":
+			x += 1
+		if ptr == "u":
+			y -= 1
+		if ptr == "d":
+			y += 1
+		if ptr == "f":
+			z += 1
+		if ptr == "b":
+			z -= 1
+		if ptr == "a":
+			w += 1
+		if ptr == "k":
+			w -= 1
+	elif grid[w][z][y][x] == "θ":
+		Stack[-1][-1] == Stack[-1][-1] ** 2
 
 	#print(Stacks)
 
