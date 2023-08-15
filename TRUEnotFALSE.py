@@ -14,6 +14,10 @@ class Token:
 	def reset(self):
 		self.val = ""
 
+class Block:
+	def __init__(self, index):
+		self.index = index
+
 
 def parse(code):
 	def setNewInt(lst, vals):
@@ -36,7 +40,10 @@ def parse(code):
 	Names = ""
 
 	Stack = []
+	Cstack = []
+
 	Fbuff = []
+	Blocks = {}
 	Fpos = 0
 
 	Vars = {}
@@ -66,7 +73,9 @@ def parse(code):
 	Ext = [
 	['π', 'φ', 'ρ', 'Σ', 'ω', ';', '=', ':'],
 	['¬', 'σ', '°', '&'],
-	['C']]
+	['C', '(', ')', '|']]
+
+	Lts = ['d', 'j', 'k', 't']
 
 	while cd[pos] != 'EOF':
 		if cd[pos] in Tks[0:10]:
@@ -237,8 +246,45 @@ def parse(code):
 
 		elif cd[pos] == Ext[2][0]:
 			Stack = []
+
+		elif cd[pos] == Ext[2][1]:
+			Cstack.append(Stack[-1])
+			Stack.pop()
+
+		elif cd[pos] == Ext[2][2]:
+			Stack.append(Cstack[-1])
+			Cstack.pop()
+
+		elif cd[pos] == Ext[2][3]:
+			Stack.append(ord(input()))
+
 		elif cd[pos] == 'S':
-			print(Stack)
+			print(Stack, Cstack)
+
+		elif cd[pos] == Lts[0]:
+			Name = Stack[-1]
+			block = Block(Fbuff[-1])
+			Stack.pop()
+			Blocks[Name] = block
+
+		elif cd[pos] == Lts[1]:
+			if Stack[-2] != 0:
+				Fpos = pos
+				pos = Blocks[Stack[-1]].index
+				Stack.pop()
+
+		elif cd[pos] == Lts[2]:
+			Fpos = pos
+			pos = Blocks[Stack[-1]].index
+			Stack.pop()
+
+		elif cd[pos] == Lts[3]:
+			if Stack[-2] == 0:
+				Fpos = pos
+				pos = Blocks[Stack[-1]].index
+				Stack.pop()
+				
+
 
 		pos += 1
 
@@ -246,9 +292,9 @@ def parse(code):
 
 
 parse("""
-1"result"=
+100"counter"=
+{"Как дела у всех кста? ".}"print"d
 
-~$[$1-$]@#0@###
-$["result":*"result"=$]"result":2/σ.
+1["print"j "counter":1-"counter"= "counter":]
 
 """)
